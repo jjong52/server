@@ -26,8 +26,12 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public String getProduct(@PathVariable("id") String id) {
-        return "Product " + id + " From port : " +serverPort;
+    public ProductResponseDto getProduct(@PathVariable("id") Long id) {
+        return productService.getProduct(id);
     }
 
+//    @GetMapping("/products")
+//    List<ProductResponseDto> getProducts(@RequestParam List<Long> productIds) {
+//        return productService.getProducts(productIds);
+//    }
 }

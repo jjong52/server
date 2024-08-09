@@ -29,4 +29,11 @@ public class ProductService {
         return responseDtoList;
     }
 
+    public ProductResponseDto getProduct(Long id) {
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new NullPointerException("상품이 존재하지 않습니다.")
+        );
+        return new ProductResponseDto(product);
+    }
+
 }
