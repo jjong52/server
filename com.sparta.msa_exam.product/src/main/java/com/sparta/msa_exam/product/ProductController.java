@@ -30,8 +30,8 @@ public class ProductController {
         return productService.getProduct(id);
     }
 
-//    @GetMapping("/products")
-//    List<ProductResponseDto> getProducts(@RequestParam List<Long> productIds) {
-//        return productService.getProducts(productIds);
-//    }
+    @GetMapping("/products/search/{productIds}")
+    List<ProductResponseDto> getProducts(@PathVariable List<Long> productIds) {
+        return productService.getProducts(productIds);
+    }
 }

@@ -2,11 +2,11 @@ package com.sparta.msa_exam.order.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductResponseDto {
     private Long id;
     private String name;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,24 +29,30 @@ public class OrderService {
 //    3. 존재할경우 주문에 상품을 추가하고, 존재하지 않는다면 주문에 저장하지 않음.
 
     public List<ProductResponseDto> getProductsByIds(List<Long> productIds) {
-        List<ProductResponseDto> productList = new ArrayList<>();
-        for (Long productId : productIds) {
-            try {
-                ProductResponseDto product = productClient.getProduct(productId);
-                productList.add(product);
-            } catch (Exception e) {
-                logger.error("상품번호 {} 가 존재하지 않습니다.", productId, e);
-                throw new IllegalArgumentException("상품번호" + productId + "가 존재하지 않습니다." );
-            }
-        }
+        List<ProductResponseDto> productList = productClient.getProducts(productIds);
+//        for (Long productId : productIds) {
+//            try {
+//                ProductResponseDto product = productClient.getProduct(productId);
+//                productList.add(product);
+//            } catch (Exception e) {
+//                logger.error("상품번호 {} 가 존재하지 않습니다.", productId, e);
+//                throw new IllegalArgumentException("상품번호" + productId + "가 존재하지 않습니다." );
+//            }
+//        }
 
         return productList;
     }
 
     public OrderResponseDto createOrder(OrderRequestDto requestDto) {
 
-        List<ProductResponseDto> products = getProductsByIds(requestDto.getProductIds());
-        Order order = new Order(requestDto.getProductIds());
+        List<Long> productIds = requestDto.getProductIds();
+        List<ProductResponseDto> products = getProductsByIds(productIds);
+
+        List<Long> validIds = products.stream()
+                .map(ProductResponseDto::getId)
+                .collect(Collectors.toList());
+
+        Order order = new Order(validIds);
         orderRepository.save(order);
         return new OrderResponseDto(order);
     }
@@ -56,27 +63,4 @@ public class OrderService {
         );
         return new OrderResponseDto(order);
     }
-//    @Transactional
-//    public OrderResponseDto createOrder(OrderRequestDto requestDto, String userId) {
-//        // Check if products exist and if they have enough quantity
-//        for (Long productId : requestDto.getOrderItemIds()) {
-//            ProductResponseDto product = productClient.getProduct(productId);
-//            log.info("############################ Product 수량 확인 : " + product.getQuantity());
-//            if (product.getQuantity() < 1) {
-//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product with ID " + productId + " is out of stock.");
-//            }
-//        }
-//
-//        // Reduce the quantity of each product by 1
-//        for (Long productId : requestDto.getOrderItemIds()) {
-//            productClient.reduceProductQuantity(productId, 1);
-//        }
-//
-//
-//        Order order = Order.createOrder(requestDto.getOrderItemIds(), userId);
-//        Order savedOrder = orderRepository.save(order);
-//        return toResponseDto(savedOrder);
-//    }
-
-
 }

@@ -11,6 +11,15 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
 
+    // Product -> ProductResponseDto 변환 메서드
+    private ProductResponseDto convertToDto(Product product) {
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getSupply_price()
+        );
+    }
+
     public ProductResponseDto createProduct(ProductRequestDto requestDto) {
         Product product = Product.builder()
                 .name(requestDto.getName())
@@ -19,12 +28,12 @@ public class ProductService {
 
         productRepository.save(product);
 
-        return new ProductResponseDto(product);
+        return new ProductResponseDto(product.getId(), product.getName(), product.getSupply_price());
     }
 
     public List<ProductResponseDto> getProducts() {
         List<ProductResponseDto> responseDtoList = productRepository.findAll().stream()
-                .map(ProductResponseDto::new)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
         return responseDtoList;
     }
@@ -33,7 +42,14 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new NullPointerException("상품이 존재하지 않습니다.")
         );
-        return new ProductResponseDto(product);
+        return new ProductResponseDto(product.getId(), product.getName(), product.getSupply_price());
+    }
+
+    public List<ProductResponseDto> getProducts(List<Long> productIds) {
+        List<ProductResponseDto> responseDtoList = productRepository.findAllById(productIds).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        return responseDtoList;
     }
 
 }
