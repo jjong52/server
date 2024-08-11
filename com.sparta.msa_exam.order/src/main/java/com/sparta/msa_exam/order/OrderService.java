@@ -5,9 +5,12 @@ import com.sparta.msa_exam.order.client.ProductResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,14 @@ public class OrderService {
 
     public ProductResponseDto getProductInfo(Long productId) {
         return productClient.getProduct(productId);
+    }
+
+    // Product -> ProductResponseDto 변환 메서드
+    private OrderResponseDto convertToDto(Order order) {
+        return new OrderResponseDto(
+                order.getOrder_id(),
+                order.getProductIds()
+        );
     }
 
 //    1.  `FeignClient`를 이용해서 주문 서비스에 상품 서비스 클라이언트 연결
@@ -59,11 +70,16 @@ public class OrderService {
         return new OrderResponseDto(order);
     }
 
+    // 이 메서드의 결과는 캐싱이 가능하다
+    // cacheNames : 이 메서드로 인해서 만들어질 캐시를 지칭하는 이름
+    // key : 캐시 데이터를 구분하기 위해 활용하는 값
+    @Cacheable(cacheNames = "orderCache", key = "args[0]")
     public OrderResponseDto getOrder(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("주문을 찾을 수 없습니다.")
-        );
-        return new OrderResponseDto(order);
+        logger.info("Get order : {}", id);
+        return orderRepository.findById(id)
+                .map(this::convertToDto)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @Transactional

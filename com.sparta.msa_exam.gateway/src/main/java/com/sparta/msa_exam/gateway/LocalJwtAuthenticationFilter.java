@@ -31,6 +31,8 @@ public class LocalJwtAuthenticationFilter implements GlobalFilter {
 
         String token = extractToken(exchange);
 
+        // Oauth2,JWT 기반으로 인증/인가를 구성하여 인가 없이 상품 서비스, 주문 서비스를 호출할 때
+        // 401 HTTP Status Code를 응답하도록 설정해주세요.
         if (token == null || !validateToken(token)) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
