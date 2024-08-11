@@ -1,6 +1,9 @@
 package com.sparta.msa_exam.product;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +23,9 @@ public class ProductService {
         );
     }
 
+    // 상품 추가 API 를 호출 할 경우 상품 목록 조회 API 의 응답 데이터 캐시가 갱신되도록 구현해주세요.
+    @CachePut(cacheNames = "productCache", key = "#result.id")
+    @CacheEvict(cacheNames = "productAllCache", allEntries = true)
     public ProductResponseDto createProduct(ProductRequestDto requestDto) {
         Product product = Product.builder()
                 .name(requestDto.getName())
@@ -31,6 +37,7 @@ public class ProductService {
         return new ProductResponseDto(product.getId(), product.getName(), product.getSupply_price());
     }
 
+    @Cacheable(cacheNames = "productAllCache", key = "getMethodName()")
     public List<ProductResponseDto> getProducts() {
         List<ProductResponseDto> responseDtoList = productRepository.findAll().stream()
                 .map(this::convertToDto)

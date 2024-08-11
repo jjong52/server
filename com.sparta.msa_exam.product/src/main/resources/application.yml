@@ -1,4 +1,10 @@
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
   application:
     name: product-service
   datasource:
@@ -10,6 +16,7 @@ spring:
     hibernate:
       ddl-auto: update
     properties:
+      defer-datasource-initialization: true
       hibernate:
         show_sql: true
         format_sql: true
